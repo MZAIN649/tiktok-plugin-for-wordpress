@@ -1,0 +1,11 @@
+# TikTok Placeholder Image
+
+This file should be replaced with an actual image file (JPG/PNG) that serves as a default thumbnail for TikTok videos when no custom thumbnail is provided.
+
+Recommended specifications:
+- Format: JPG or PNG
+- Dimensions: 300x533 pixels (TikTok aspect ratio)
+- Size: < 50KB for optimal loading
+- Content: TikTok-style gradient background with play button icon
+
+You can use an online image generator or create your own placeholder image with these specifications. 

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTok Lightbox Plugin Demo</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="assets/tiktok-lightbox.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        h1 {
+            color: white;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .demo-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .demo-card h3 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .demo-description {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .usage-section {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 3rem 0;
+            text-align: left;
+        }
+        
+        .usage-section h2 {
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 10px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .feature-item {
+            background: rgba(255,255,255,0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .feature-item h4 {
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature-item p {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 TikTok Lightbox Plugin</h1>
+        <p class="subtitle">A beautiful, responsive lightbox plugin for TikTok videos with Elementor integration</p>
+        
+        <div class="demo-grid">
+            <div class="demo-card">
+                <h3>Demo Video #1</h3>
+                <p class="demo-description">Click to watch this TikTok video in a beautiful full-screen lightbox</p>
+                <div class="tiktok-lightbox-trigger" data-video-id="7503809700601908488">
+                    <div class="tiktok-thumbnail">
+                        <img src="https://via.placeholder.com/300x533/ff0050/ffffff?text=TikTok+Video" alt="TikTok Video" />
+                        <div class="play-button">
+                            <svg width="68" height="48" viewBox="0 0 68 48">
+                                <path d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z" fill="#ff0050"></path>
+                                <path d="M45,24L27,14v20" fill="white"></path>
+                            </svg>
+                        </div>
+                        <div class="tiktok-button">Watch on TikTok</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="demo-card">
+                <h3>Demo Video #2</h3>
+                <p class="demo-description">Another example with custom styling and branding</p>
+                <div class="tiktok-lightbox-trigger" data-video-id="7503809700601908488">
+                    <div class="tiktok-thumbnail">
+                        <img src="https://via.placeholder.com/300x533/764ba2/ffffff?text=Custom+Thumbnail" alt="TikTok Video" />
+                        <div class="play-button">
+                            <svg width="68" height="48" viewBox="0 0 68 48">
+                                <path d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z" fill="#764ba2"></path>
+                                <path d="M45,24L27,14v20" fill="white"></path>
+                            </svg>
+                        </div>
+                        <div class="tiktok-button">Play Video</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="features">
+            <div class="feature-item">
+                <h4>📱 Responsive Design</h4>
+                <p>Works perfectly on desktop, tablet, and mobile devices with adaptive sizing</p>
+            </div>
+            <div class="feature-item">
+                <h4>🎨 Customizable</h4>
+                <p>Full control over colors, sizes, thumbnails, and button text</p>
+            </div>
+            <div class="feature-item">
+                <h4>🔧 Elementor Ready</h4>
+                <p>Seamless integration with Elementor page builder with live preview</p>
+            </div>
+            <div class="feature-item">
+                <h4>⚡ Fast Loading</h4>
+                <p>Optimized performance with lazy loading and smooth animations</p>
+            </div>
+            <div class="feature-item">
+                <h4>♿ Accessible</h4>
+                <p>Keyboard navigation support and screen reader friendly</p>
+            </div>
+            <div class="feature-item">
+                <h4>🔒 Secure</h4>
+                <p>Built with WordPress security best practices and proper sanitization</p>
+            </div>
+        </div>
+        
+        <div class="usage-section">
+            <h2>How to Use</h2>
+            
+            <h3>1. WordPress Shortcode</h3>
+            <p>Use the shortcode anywhere in your WordPress content:</p>
+            <div class="code-block">
+[tiktok_lightbox url="https://www.tiktok.com/@matty.b129/video/7503809700601908488" button_text="Watch Video"]
+            </div>
+            
+            <h3>2. Elementor Widget</h3>
+            <p>Search for "TikTok Lightbox" in the Elementor widget panel and drag it to your page. Configure the settings in the widget panel:</p>
+            <ul>
+                <li>TikTok URL: Enter the full TikTok video URL</li>
+                <li>Custom Thumbnail: Upload your own thumbnail image (optional)</li>
+                <li>Button Text: Customize the call-to-action text</li>
+                <li>Styling Options: Control colors, sizes, borders, and animations</li>
+            </ul>
+            
+            <h3>3. Direct JavaScript</h3>
+            <p>For developers, you can trigger the lightbox programmatically:</p>
+            <div class="code-block">
+// Open lightbox with video ID
+TikTokLightbox.open('7503809700601908488');
+
+// Close lightbox
+TikTokLightbox.close();
+            </div>
+            
+            <h3>4. jQuery Plugin</h3>
+            <p>Use as a jQuery plugin:</p>
+            <div class="code-block">
+$('.my-tiktok-element').tikTokLightbox({
+    videoId: '7503809700601908488'
+});
+            </div>
+        </div>
+    </div>
+    
+    <!-- TikTok Lightbox HTML (normally added automatically by WordPress plugin) -->
+    <div id="tiktok-lightbox" class="tiktok-lightbox">
+        <div class="tiktok-lightbox-overlay"></div>
+        <div class="tiktok-lightbox-content">
+            <button class="tiktok-lightbox-close">&times;</button>
+            <div class="tiktok-lightbox-video">
+                <div id="tiktok-embed-container"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="assets/tiktok-lightbox.js"></script>
+</body>
+</html> 

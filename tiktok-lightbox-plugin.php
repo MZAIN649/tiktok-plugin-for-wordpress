@@ -37,8 +37,10 @@ class TikTokLightboxPlugin {
     }
     
     public function register_elementor_widgets() {
-        require_once TIKTOK_LIGHTBOX_PLUGIN_PATH . 'elementor/tiktok-lightbox-widget.php';
-        \Elementor\Plugin::instance()->widgets_manager->register_widget_type(new \TikTok_Lightbox_Widget());
+        if (class_exists('\Elementor\Plugin')) {
+            require_once TIKTOK_LIGHTBOX_PLUGIN_PATH . 'elementor/tiktok-lightbox-widget.php';
+            \Elementor\Plugin::instance()->widgets_manager->register_widget_type(new \TikTok_Lightbox_Widget());
+        }
     }
     
     public function tiktok_lightbox_shortcode($atts) {
@@ -56,26 +58,66 @@ class TikTokLightboxPlugin {
         
         $video_id = $this->extract_video_id($atts['url']);
         if (!$video_id) {
-            return '<p>Invalid TikTok URL</p>';
+            return '<p>Invalid TikTok URL. Please use a valid TikTok video URL.</p>';
         }
         
         return $this->render_tiktok_lightbox($video_id, $atts);
     }
     
     public function extract_video_id($url) {
-        // Extract video ID from TikTok URL
-        preg_match('/\/video\/(\d+)/', $url, $matches);
-        return isset($matches[1]) ? $matches[1] : false;
+        // Handle different TikTok URL formats
+        $patterns = array(
+            '/\/video\/(\d+)/',           // Standard: https://www.tiktok.com/@user/video/1234567890
+            '/\/v\/(\d+)/',               // Short: https://vm.tiktok.com/v/1234567890
+            '/tiktok\.com\/.*\/(\d+)/',   // Various formats with numbers
+            '/(\d{19})/',                 // Direct video ID (19 digits)
+        );
+        
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $url, $matches)) {
+                if (isset($matches[1]) && strlen($matches[1]) >= 15) {
+                    return $matches[1];
+                }
+            }
+        }
+        
+        // Try to extract from share URLs like vm.tiktok.com
+        if (strpos($url, 'vm.tiktok.com') !== false || strpos($url, 'vt.tiktok.com') !== false) {
+            // For short URLs, we might need to follow redirects
+            $video_id = $this->resolve_short_url($url);
+            if ($video_id) {
+                return $video_id;
+            }
+        }
+        
+        return false;
+    }
+    
+    private function resolve_short_url($url) {
+        // Simple method to try to extract video ID from short URLs
+        // This is a basic implementation - in production you might want to follow redirects
+        $parsed = parse_url($url);
+        if (isset($parsed['path'])) {
+            $path_parts = explode('/', trim($parsed['path'], '/'));
+            foreach ($path_parts as $part) {
+                if (is_numeric($part) && strlen($part) >= 15) {
+                    return $part;
+                }
+            }
+        }
+        return false;
     }
     
     public function render_tiktok_lightbox($video_id, $atts = array()) {
         $thumbnail = !empty($atts['thumbnail']) ? $atts['thumbnail'] : TIKTOK_LIGHTBOX_PLUGIN_URL . 'assets/tiktok-placeholder.jpg';
         $button_text = !empty($atts['button_text']) ? $atts['button_text'] : 'Watch on TikTok';
+        $width = !empty($atts['width']) ? intval($atts['width']) : 300;
+        $height = !empty($atts['height']) ? intval($atts['height']) : 533;
         
         ob_start();
         ?>
         <div class="tiktok-lightbox-trigger" data-video-id="<?php echo esc_attr($video_id); ?>">
-            <div class="tiktok-thumbnail">
+            <div class="tiktok-thumbnail" style="width: <?php echo $width; ?>px; height: <?php echo $height; ?>px;">
                 <img src="<?php echo esc_url($thumbnail); ?>" alt="TikTok Video" />
                 <div class="play-button">
                     <svg width="68" height="48" viewBox="0 0 68 48">
@@ -86,6 +128,12 @@ class TikTokLightboxPlugin {
                 <div class="tiktok-button"><?php echo esc_html($button_text); ?></div>
             </div>
         </div>
+        <!-- Debug info (remove in production) -->
+        <?php if (defined('WP_DEBUG') && WP_DEBUG): ?>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">
+            Video ID: <?php echo esc_html($video_id); ?>
+        </div>
+        <?php endif; ?>
         <?php
         return ob_get_clean();
     }

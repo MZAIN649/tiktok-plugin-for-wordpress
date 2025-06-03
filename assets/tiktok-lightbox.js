@@ -123,39 +123,145 @@
             const container = $('#tiktok-embed-container');
             container.empty();
 
-            // Create TikTok embed HTML
-            const embedHTML = `
+            // Show loading message
+            container.html(`
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: white; font-size: 18px; flex-direction: column;">
+                    <div style="margin-bottom: 20px;">Loading TikTok video...</div>
+                    <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid white; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                </div>
+                <style>
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                </style>
+            `);
+
+            // Load TikTok embed script first, then create embed
+            this.loadTikTokScript(() => {
+                this.createTikTokEmbed(videoId, container);
+            });
+        }
+
+        createTikTokEmbed(videoId, container) {
+            // Clear container
+            container.empty();
+
+            // Try multiple embed methods for better compatibility
+            this.tryEmbedMethods(videoId, container);
+        }
+
+        tryEmbedMethods(videoId, container) {
+            // Method 1: Standard TikTok embed
+            const embedHTML1 = `
                 <blockquote class="tiktok-embed" 
                     cite="https://www.tiktok.com/@user/video/${videoId}" 
-                    data-video-id="${videoId}" 
-                    style="max-width: 100%; min-width: 100%; height: 100%;">
+                    data-video-id="${videoId}"
+                    data-embed-from="embed_page"
+                    style="max-width: 100%; min-width: 100%; height: 100%; margin: 0;">
                     <section style="height: 100%; display: flex; align-items: center; justify-content: center;">
-                        <div style="color: white; font-size: 18px;">Loading TikTok video...</div>
+                        <a target="_blank" 
+                           title="TikTok Video" 
+                           href="https://www.tiktok.com/@user/video/${videoId}"
+                           style="color: white; text-decoration: none;">
+                            <div style="color: white; font-size: 18px;">Loading TikTok video...</div>
+                        </a>
                     </section>
                 </blockquote>
             `;
 
-            container.html(embedHTML);
+            container.html(embedHTML1);
 
-            // Load TikTok embed script if not already loaded
-            this.loadTikTokScript(() => {
-                // Reinitialize TikTok embeds
-                if (window.tiktokEmbed && typeof window.tiktokEmbed.lib !== 'undefined') {
-                    window.tiktokEmbed.lib.render();
-                } else if (window.instgrm) {
-                    window.instgrm.Embeds.process();
+            // Initialize TikTok embeds
+            setTimeout(() => {
+                if (window.tiktokEmbed) {
+                    // TikTok's official embed script
+                    if (window.tiktokEmbed.lib && typeof window.tiktokEmbed.lib.render === 'function') {
+                        window.tiktokEmbed.lib.render();
+                    }
+                } else {
+                    // Fallback: Try to reinitialize script
+                    this.reinitializeTikTokScript(videoId, container);
                 }
+            }, 500);
+
+            // Fallback after 3 seconds if embed doesn't load
+            setTimeout(() => {
+                if (container.find('iframe').length === 0) {
+                    console.log('TikTok embed failed, trying alternative method...');
+                    this.tryAlternativeEmbed(videoId, container);
+                }
+            }, 3000);
+        }
+
+        tryAlternativeEmbed(videoId, container) {
+            // Alternative method: Direct iframe embed
+            const iframeHTML = `
+                <iframe 
+                    src="https://www.tiktok.com/embed/v2/${videoId}?lang=en-US"
+                    width="100%" 
+                    height="100%" 
+                    frameborder="0" 
+                    scrolling="no" 
+                    allowfullscreen
+                    style="border: none; border-radius: 12px;">
+                </iframe>
+            `;
+            
+            container.html(iframeHTML);
+
+            // If iframe also fails, show error message
+            setTimeout(() => {
+                const iframe = container.find('iframe')[0];
+                if (iframe) {
+                    iframe.onerror = () => {
+                        this.showEmbedError(videoId, container);
+                    };
+                } else {
+                    this.showEmbedError(videoId, container);
+                }
+            }, 2000);
+        }
+
+        showEmbedError(videoId, container) {
+            const errorHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: white; text-align: center; flex-direction: column; padding: 20px;">
+                    <div style="font-size: 18px; margin-bottom: 20px;">Unable to load TikTok video</div>
+                    <div style="font-size: 14px; margin-bottom: 20px; opacity: 0.8;">The video might be private or restricted</div>
+                    <a href="https://www.tiktok.com/@user/video/${videoId}" 
+                       target="_blank" 
+                       style="background: #ff0050; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold;">
+                        View on TikTok
+                    </a>
+                </div>
+            `;
+            container.html(errorHTML);
+        }
+
+        reinitializeTikTokScript(videoId, container) {
+            // Remove existing script
+            $('script[src*="tiktok.com/embed.js"]').remove();
+            window.tiktokEmbed = undefined;
+            window.tiktokEmbedLoaded = false;
+
+            // Reload script
+            this.loadTikTokScript(() => {
+                setTimeout(() => {
+                    if (window.tiktokEmbed && window.tiktokEmbed.lib) {
+                        window.tiktokEmbed.lib.render();
+                    }
+                }, 1000);
             });
         }
 
         loadTikTokScript(callback) {
-            if (window.tiktokEmbedLoaded) {
+            if (window.tiktokEmbedLoaded && window.tiktokEmbed) {
                 callback();
                 return;
             }
 
             // Check if script is already loaded
-            if ($('script[src*="tiktok.com/embed.js"]').length > 0) {
+            if ($('script[src*="tiktok.com/embed.js"]').length > 0 && window.tiktokEmbed) {
                 window.tiktokEmbedLoaded = true;
                 callback();
                 return;
@@ -167,7 +273,11 @@
             script.async = true;
             script.onload = () => {
                 window.tiktokEmbedLoaded = true;
-                callback();
+                setTimeout(callback, 500); // Give script time to initialize
+            };
+            script.onerror = () => {
+                console.error('Failed to load TikTok embed script');
+                callback(); // Continue with fallback methods
             };
             document.head.appendChild(script);
         }

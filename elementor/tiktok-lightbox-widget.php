@@ -49,7 +49,7 @@ class TikTok_Lightbox_Widget extends \Elementor\Widget_Base {
                 'default'     => [
                     'url' => '',
                 ],
-                'description' => esc_html__('Enter the full TikTok video URL', 'tiktok-lightbox'),
+                'description' => esc_html__('Enter the full TikTok video URL (works with vm.tiktok.com links too)', 'tiktok-lightbox'),
             ]
         );
 
@@ -304,7 +304,7 @@ class TikTok_Lightbox_Widget extends \Elementor\Widget_Base {
         // Extract video ID from URL
         $video_id = $this->extract_video_id($settings['tiktok_url']['url']);
         if (!$video_id) {
-            echo '<p>' . esc_html__('Invalid TikTok URL', 'tiktok-lightbox') . '</p>';
+            echo '<p>' . esc_html__('Invalid TikTok URL. Please use a valid TikTok video URL.', 'tiktok-lightbox') . '</p>';
             return;
         }
 
@@ -329,13 +329,54 @@ class TikTok_Lightbox_Widget extends \Elementor\Widget_Base {
                 <div class="tiktok-button"><?php echo esc_html($button_text); ?></div>
             </div>
         </div>
+        <!-- Debug info for Elementor editor -->
+        <?php if (defined('WP_DEBUG') && WP_DEBUG): ?>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">
+            Video ID: <?php echo esc_html($video_id); ?>
+        </div>
+        <?php endif; ?>
         <?php
     }
 
     private function extract_video_id($url) {
-        // Extract video ID from TikTok URL
-        preg_match('/\/video\/(\d+)/', $url, $matches);
-        return isset($matches[1]) ? $matches[1] : false;
+        // Handle different TikTok URL formats - same as main plugin
+        $patterns = array(
+            '/\/video\/(\d+)/',           // Standard: https://www.tiktok.com/@user/video/1234567890
+            '/\/v\/(\d+)/',               // Short: https://vm.tiktok.com/v/1234567890
+            '/tiktok\.com\/.*\/(\d+)/',   // Various formats with numbers
+            '/(\d{19})/',                 // Direct video ID (19 digits)
+        );
+        
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $url, $matches)) {
+                if (isset($matches[1]) && strlen($matches[1]) >= 15) {
+                    return $matches[1];
+                }
+            }
+        }
+        
+        // Try to extract from share URLs like vm.tiktok.com
+        if (strpos($url, 'vm.tiktok.com') !== false || strpos($url, 'vt.tiktok.com') !== false) {
+            $video_id = $this->resolve_short_url($url);
+            if ($video_id) {
+                return $video_id;
+            }
+        }
+        
+        return false;
+    }
+    
+    private function resolve_short_url($url) {
+        $parsed = parse_url($url);
+        if (isset($parsed['path'])) {
+            $path_parts = explode('/', trim($parsed['path'], '/'));
+            foreach ($path_parts as $part) {
+                if (is_numeric($part) && strlen($part) >= 15) {
+                    return $part;
+                }
+            }
+        }
+        return false;
     }
 
     protected function content_template() {
@@ -343,9 +384,20 @@ class TikTok_Lightbox_Widget extends \Elementor\Widget_Base {
         <#
         var videoId = '';
         if (settings.tiktok_url.url) {
-            var matches = settings.tiktok_url.url.match(/\/video\/(\d+)/);
-            if (matches && matches[1]) {
-                videoId = matches[1];
+            // JavaScript version of video ID extraction
+            var patterns = [
+                /\/video\/(\d+)/,
+                /\/v\/(\d+)/,
+                /tiktok\.com\/.*\/(\d+)/,
+                /(\d{19})/
+            ];
+            
+            for (var i = 0; i < patterns.length; i++) {
+                var matches = settings.tiktok_url.url.match(patterns[i]);
+                if (matches && matches[1] && matches[1].length >= 15) {
+                    videoId = matches[1];
+                    break;
+                }
             }
         }
 
@@ -371,4 +423,5 @@ class TikTok_Lightbox_Widget extends \Elementor\Widget_Base {
         </div>
         <?php
     }
-} 
+}
+?> 

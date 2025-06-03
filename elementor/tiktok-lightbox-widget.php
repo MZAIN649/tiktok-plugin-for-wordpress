@@ -371,5 +371,4 @@ class TikTok_Lightbox_Widget extends \Elementor\Widget_Base {
         </div>
         <?php
     }
-}
-?> 
+} 
